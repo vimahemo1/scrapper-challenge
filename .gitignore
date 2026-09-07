@@ -1,0 +1,11 @@
+node_modules/
+dist/
+response.html
+pagina.html
+cookies.txt
+logs/
+output/
+pdfs/
+debug/
+.env
+*.log
