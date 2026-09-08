@@ -463,12 +463,3 @@ npm run dev
 
 El desafío no requiere descargar todos los PDFs en una sola ejecución. El diseño permite que las descargas se completen progresivamente entre ejecuciones.
 
-Uso responsable
-
-Este proyecto fue desarrollado exclusivamente como solución a un desafío técnico sobre información pública.
-
-El scraper incluye delays y manejo de rate limiting con el objetivo de realizar las solicitudes de forma controlada y evitar sobrecargar el servicio.
-
-Autor
-
-Desarrollado como parte del Scraping Challenge.
