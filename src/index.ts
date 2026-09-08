@@ -542,10 +542,77 @@ async function main() {
     console.log(
         "Respuesta guardada en search-response.xml"
     );
+    // Analizar rápidamente la respuesta
+    const xml = searchResponse.data;
+
+    console.log(
+        "¿Contiene ViewState?:",
+        xml.includes("javax.faces.ViewState")
+    );
+
+    console.log(
+        "¿Contiene referencia a procesos?:",
+        xml.toLowerCase().includes("processo")
+    );
+
+    console.log(
+        "¿Contiene CAPTCHA?:",
+        xml.toLowerCase().includes("captcha")
+    );
+
+    console.log(
+        "¿Contiene error?:",
+        xml.toLowerCase().includes("erro")
+    );
+
+    console.log("\nInicio de la respuesta XML:\n");
+
+    console.log(
+        xml.substring(0, 1500)
+    );
+
 
 }
 
+fs.writeFileSync(
+    "search-response.xml",
+    searchResponse.data,
+    "utf-8"
+);
 
+console.log(
+    "Respuesta guardada en search-response.xml"
+);
+
+
+// Analizar rápidamente la respuesta
+const xml = searchResponse.data;
+
+console.log(
+    "¿Contiene ViewState?:",
+    xml.includes("javax.faces.ViewState")
+);
+
+console.log(
+    "¿Contiene referencia a procesos?:",
+    xml.toLowerCase().includes("processo")
+);
+
+console.log(
+    "¿Contiene CAPTCHA?:",
+    xml.toLowerCase().includes("captcha")
+);
+
+console.log(
+    "¿Contiene error?:",
+    xml.toLowerCase().includes("erro")
+);
+
+console.log("\nInicio de la respuesta XML:\n");
+
+console.log(
+    xml.substring(0, 1500)
+);
 // =============================================================
 // EJECUTAR
 // =============================================================
