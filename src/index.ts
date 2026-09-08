@@ -193,7 +193,91 @@ async function main() {
 
 
     // =========================================================
-    // 8. MOSTRAR CAMPOS ENCONTRADOS
+    // 8. INSPECCIONAR RECAPTCHA
+    // =========================================================
+
+    const possibleMarkers = [
+        "function executarReCaptcha",
+        "executarReCaptcha =",
+        "executarReCaptcha:"
+    ];
+
+
+    let recaptchaPosition = -1;
+    let markerFound = "";
+
+
+    for (const marker of possibleMarkers) {
+
+        const position =
+            response.data.indexOf(marker);
+
+
+        if (position >= 0) {
+
+            recaptchaPosition =
+                position;
+
+            markerFound =
+                marker;
+
+            break;
+        }
+
+    }
+
+
+    if (recaptchaPosition >= 0) {
+
+        const start =
+            Math.max(
+                0,
+                recaptchaPosition - 1000
+            );
+
+
+        const end =
+            Math.min(
+                response.data.length,
+                recaptchaPosition + 5000
+            );
+
+
+        const recaptchaCode =
+            response.data.substring(
+                start,
+                end
+            );
+
+
+        fs.writeFileSync(
+            "recaptcha-debug.txt",
+            recaptchaCode,
+            "utf-8"
+        );
+
+
+        console.log(
+            "Definición de executarReCaptcha encontrada con:",
+            markerFound
+        );
+
+
+        console.log(
+            "Código guardado en recaptcha-debug.txt"
+        );
+
+    } else {
+
+        console.log(
+            "No se encontró la definición directa de executarReCaptcha."
+        );
+
+    }
+
+
+    // =========================================================
+    // 9. MOSTRAR CAMPOS DEL FORMULARIO
     // =========================================================
 
     const campos: {
@@ -208,6 +292,7 @@ async function main() {
 
             const input =
                 $(element);
+
 
             const name =
                 input.attr("name");
@@ -243,7 +328,7 @@ async function main() {
 
 
     // =========================================================
-    // 9. CONSTRUIR DATOS DEL FORMULARIO
+    // 10. CONSTRUIR DATOS DEL FORMULARIO
     // =========================================================
 
     const formData =
@@ -260,6 +345,7 @@ async function main() {
             const input =
                 $(element);
 
+
             const name =
                 input.attr("name");
 
@@ -275,20 +361,21 @@ async function main() {
             ).toLowerCase();
 
 
-            // Los botones se agregan manualmente después
+            // Botones se agregan manualmente
             if (
                 type === "button"
-                || type === "submit"
+                ||
+                type === "submit"
             ) {
                 return;
             }
 
 
-            // Radio y checkbox solo se envían
-            // cuando están seleccionados
+            // Radio y checkbox solo si están seleccionados
             if (
                 type === "radio"
-                || type === "checkbox"
+                ||
+                type === "checkbox"
             ) {
 
                 if (!input.is(":checked")) {
@@ -321,6 +408,7 @@ async function main() {
 
             const select =
                 $(element);
+
 
             const name =
                 select.attr("name");
@@ -358,30 +446,78 @@ async function main() {
 
 
     // =========================================================
-    // 10. AGREGAR BOTÓN PESQUISAR
+    // 11. OBTENER ACCIÓN AJAX REAL DE BÚSQUEDA
     // =========================================================
 
-    const searchButtonName =
-        searchButton.attr("name");
+    let pesquisaScript = "";
 
 
-    if (!searchButtonName) {
+    $("script").each(
+        (_, element) => {
+
+            const content =
+                $(element).html()
+                ?? "";
+
+
+            if (
+                content.includes(
+                    "executarPesquisa=function"
+                )
+            ) {
+
+                pesquisaScript =
+                    content;
+
+                return false;
+            }
+
+        }
+    );
+
+
+    if (!pesquisaScript) {
 
         throw new Error(
-            "El botón de búsqueda no tiene atributo 'name'."
+            "No se encontró la definición de executarPesquisa."
         );
 
     }
 
 
+    const actionMatch =
+        pesquisaScript.match(
+            /similarityGroupingId':'([^']+)'/
+        );
+
+
+    if (!actionMatch) {
+
+        throw new Error(
+            "No se pudo determinar la acción AJAX de executarPesquisa."
+        );
+
+    }
+
+
+    const searchActionName =
+        actionMatch[1];
+
+
+    console.log(
+        "Acción AJAX real de búsqueda:",
+        searchActionName
+    );
+
+
     formData.set(
-        searchButtonName,
-        searchButtonName
+        searchActionName,
+        searchActionName
     );
 
 
     // =========================================================
-    // 11. AGREGAR FECHAS
+    // 12. AGREGAR FECHAS
     // =========================================================
 
     formData.set(
@@ -397,7 +533,7 @@ async function main() {
 
 
     // =========================================================
-    // 12. PARÁMETROS AJAX DE RICHFACES
+    // 13. PARÁMETROS AJAX DE RICHFACES
     // =========================================================
 
     formData.set(
@@ -413,7 +549,7 @@ async function main() {
 
 
     // =========================================================
-    // 13. MOSTRAR DATOS QUE SE ENVIARÁN
+    // 14. MOSTRAR DATOS QUE SE ENVIARÁN
     // =========================================================
 
     console.log(
@@ -434,7 +570,7 @@ async function main() {
 
 
     // =========================================================
-    // 14. OBTENER URL DEL POST
+    // 15. OBTENER URL DEL POST
     // =========================================================
 
     const action =
@@ -464,7 +600,7 @@ async function main() {
 
 
     // =========================================================
-    // 15. REALIZAR POST DE BÚSQUEDA
+    // 16. REALIZAR POST DE BÚSQUEDA
     // =========================================================
 
     const searchResponse =
@@ -477,6 +613,7 @@ async function main() {
             {
 
                 timeout: 30000,
+
 
                 headers: {
 
@@ -498,9 +635,8 @@ async function main() {
                 },
 
 
-                // Permite inspeccionar respuestas HTTP
-                // sin lanzar automáticamente una excepción
-                validateStatus: () => true
+                validateStatus:
+                    () => true
 
             }
 
@@ -508,7 +644,7 @@ async function main() {
 
 
     // =========================================================
-    // 16. INFORMACIÓN DE LA RESPUESTA
+    // 17. INFORMACIÓN DE LA RESPUESTA
     // =========================================================
 
     console.log(
@@ -530,7 +666,7 @@ async function main() {
 
 
     // =========================================================
-    // 17. GUARDAR RESPUESTA
+    // 18. GUARDAR RESPUESTA
     // =========================================================
 
     fs.writeFileSync(
@@ -546,7 +682,535 @@ async function main() {
 
 
     // =========================================================
-    // 18. ANALIZAR RÁPIDAMENTE LA RESPUESTA
+    // 19. LEER RESULTADOS
+    // =========================================================
+
+    const $results =
+        cheerio.load(
+            searchResponse.data
+        );
+
+
+    const resultRows =
+        $results(
+            '[id="fPP:processosTable:tb"] tr'
+        );
+
+
+    console.log(
+        "Cantidad de filas encontradas:",
+        resultRows.length
+    );
+
+
+    // =========================================================
+    // 20. MOSTRAR PRIMERAS 5 FILAS
+    // =========================================================
+
+    resultRows
+        .slice(0, 5)
+        .each(
+            (index, element) => {
+
+                const row =
+                    $results(element);
+
+
+                const cells: string[] =
+                    [];
+
+
+                row.find("td").each(
+                    (_, td) => {
+
+                        const text =
+                            $results(td)
+                                .text()
+                                .replace(
+                                    /\s+/g,
+                                    " "
+                                )
+                                .trim();
+
+
+                        cells.push(
+                            text
+                        );
+
+                    }
+                );
+
+
+                console.log(
+                    `Fila ${index + 1}:`
+                );
+
+
+                console.log(
+                    cells
+                );
+
+            }
+        );
+
+
+    // =========================================================
+    // 21. MOSTRAR ENLACES DE PRIMERAS 5 FILAS
+    // =========================================================
+
+    resultRows
+        .slice(0, 5)
+        .each(
+            (index, element) => {
+
+                const row =
+                    $results(element);
+
+
+                const links: {
+                    text: string;
+                    href: string;
+                }[] = [];
+
+
+                row.find("a[href]").each(
+                    (_, linkElement) => {
+
+                        const link =
+                            $results(linkElement);
+
+
+                        links.push({
+
+                            text:
+                                link
+                                    .text()
+                                    .replace(
+                                        /\s+/g,
+                                        " "
+                                    )
+                                    .trim(),
+
+                            href:
+                                link.attr("href")
+                                ?? ""
+
+                        });
+
+                    }
+                );
+
+
+                console.log(
+                    `Enlaces fila ${index + 1}:`,
+                    links
+                );
+
+            }
+        );
+
+
+    // =========================================================
+    // 22. INSPECCIONAR ACCIONES DE DETALLE
+    // =========================================================
+
+    resultRows
+        .slice(0, 3)
+        .each(
+            (index, element) => {
+
+                const row =
+                    $results(element);
+
+
+                console.log(
+                    `\n--- ACCIONES FILA ${index + 1} ---`
+                );
+
+
+                row.find("a").each(
+                    (_, linkElement) => {
+
+                        const link =
+                            $results(linkElement);
+
+
+                        console.log({
+
+                            text:
+                                link
+                                    .text()
+                                    .replace(
+                                        /\s+/g,
+                                        " "
+                                    )
+                                    .trim(),
+
+                            id:
+                                link.attr("id")
+                                ?? "",
+
+                            href:
+                                link.attr("href")
+                                ?? "",
+
+                            onclick:
+                                link.attr("onclick")
+                                ?? ""
+
+                        });
+
+                    }
+                );
+
+            }
+        );
+
+
+    // =========================================================
+    // 23. OBTENER URL DEL PRIMER DETALLE
+    // =========================================================
+
+    const firstRow =
+        resultRows.first();
+
+
+    if (firstRow.length === 0) {
+
+        throw new Error(
+            "No existen filas para consultar el detalle."
+        );
+
+    }
+
+
+    const firstDetailLink =
+        firstRow
+            .find("a")
+            .first();
+
+
+    const detailOnclick =
+        firstDetailLink.attr("onclick")
+        ?? "";
+
+
+    console.log(
+        "Onclick del primer detalle:",
+        detailOnclick
+    );
+
+
+    const detailMatch =
+        detailOnclick.match(
+            /openPopUp\([^,]+,'([^']+)'\)/
+        );
+
+
+    if (!detailMatch) {
+
+        throw new Error(
+            "No se pudo extraer la URL del detalle."
+        );
+
+    }
+
+
+    const detailPath =
+        detailMatch[1];
+
+
+    const detailUrl =
+        new URL(
+            detailPath,
+            url
+        ).toString();
+
+
+    console.log(
+        "URL detalle:",
+        detailUrl
+    );
+
+
+    // =========================================================
+    // 24. CONSULTAR DETALLE DEL PRIMER PROCESO
+    // =========================================================
+
+    const detailResponse =
+        await axios.get<string>(
+            detailUrl,
+            {
+                timeout: 30000,
+
+                headers: {
+
+                    "User-Agent":
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+
+                    "Cookie":
+                        cookies,
+
+                    "Referer":
+                        postUrl
+
+                },
+
+                validateStatus:
+                    () => true
+            }
+        );
+
+
+    console.log(
+        "HTTP detalle:",
+        detailResponse.status
+    );
+
+
+    console.log(
+        "Content-Type detalle:",
+        detailResponse.headers["content-type"]
+    );
+
+
+    console.log(
+        "Tamaño detalle:",
+        detailResponse.data.length
+    );
+
+
+    // =========================================================
+    // 25. GUARDAR HTML DEL DETALLE
+    // =========================================================
+
+    fs.writeFileSync(
+        "detail-response.html",
+        detailResponse.data,
+        "utf-8"
+    );
+
+
+    console.log(
+        "Detalle guardado en detail-response.html"
+    );
+
+// =========================================================
+// 26. CARGAR DETALLE CON CHEERIO
+// =========================================================
+
+const $detail =
+    cheerio.load(
+        detailResponse.data
+    );
+
+
+// =========================================================
+// 27. INSPECCIONAR ENLACES DEL DETALLE
+// =========================================================
+
+const detailLinks: {
+    text: string;
+    href: string;
+    onclick: string;
+    id: string;
+}[] = [];
+
+
+$detail("a").each(
+    (_, element) => {
+
+        const link =
+            $detail(element);
+
+
+        const text =
+            link
+                .text()
+                .replace(/\s+/g, " ")
+                .trim();
+
+
+        const href =
+            link.attr("href")
+            ?? "";
+
+
+        const onclick =
+            link.attr("onclick")
+            ?? "";
+
+
+        const id =
+            link.attr("id")
+            ?? "";
+
+
+        const combined =
+            `${text} ${href} ${onclick}`
+                .toLowerCase();
+
+
+        if (
+            combined.includes("document")
+            ||
+            combined.includes("pdf")
+            ||
+            combined.includes("download")
+            ||
+            combined.includes("visual")
+        ) {
+
+            detailLinks.push({
+                text,
+                href,
+                onclick,
+                id
+            });
+
+        }
+
+    }
+);
+
+
+console.log(
+    "\nEnlaces relacionados con documentos/PDF:"
+);
+
+
+console.log(
+    detailLinks
+);
+
+
+// =========================================================
+// 28. INSPECCIONAR BOTONES DEL DETALLE
+// =========================================================
+
+const detailButtons: {
+    id: string;
+    name: string;
+    value: string;
+    onclick: string;
+    type: string;
+}[] = [];
+
+
+$detail(
+    "input[type='button'], input[type='submit'], button"
+).each(
+    (_, element) => {
+
+        const button =
+            $detail(element);
+
+
+        const id =
+            button.attr("id")
+            ?? "";
+
+
+        const name =
+            button.attr("name")
+            ?? "";
+
+
+        const value =
+            button.attr("value")
+            ??
+            button.text().trim();
+
+
+        const onclick =
+            button.attr("onclick")
+            ?? "";
+
+
+        const type =
+            button.attr("type")
+            ?? "";
+
+
+        const combined =
+            `${id} ${name} ${value} ${onclick}`
+                .toLowerCase();
+
+
+        if (
+            combined.includes("pdf")
+            ||
+            combined.includes("document")
+            ||
+            combined.includes("download")
+            ||
+            combined.includes("visual")
+        ) {
+
+            detailButtons.push({
+                id,
+                name,
+                value,
+                onclick,
+                type
+            });
+
+        }
+
+    }
+);
+
+
+console.log(
+    "\nBotones relacionados con documentos/PDF:"
+);
+
+
+console.log(
+    detailButtons
+);
+    // =========================================================
+    // 26. ANALIZAR RÁPIDAMENTE EL DETALLE
+    // =========================================================
+
+    const detailHtml =
+        detailResponse.data;
+
+
+    console.log(
+        "¿Detalle contiene Processo?:",
+        detailHtml
+            .toLowerCase()
+            .includes("processo")
+    );
+
+
+    console.log(
+        "¿Detalle contiene Documento?:",
+        detailHtml
+            .toLowerCase()
+            .includes("documento")
+    );
+
+
+    console.log(
+        "¿Detalle contiene PDF?:",
+        detailHtml
+            .toLowerCase()
+            .includes("pdf")
+    );
+
+
+    console.log(
+        "¿Detalle contiene movimentação?:",
+        detailHtml
+            .toLowerCase()
+            .includes("movimenta")
+    );
+
+
+    // =========================================================
+    // 27. ANALIZAR RESPUESTA XML DE BÚSQUEDA
     // =========================================================
 
     const xml =
@@ -582,19 +1246,6 @@ async function main() {
         xml
             .toLowerCase()
             .includes("erro")
-    );
-
-
-    console.log(
-        "\nInicio de la respuesta XML:\n"
-    );
-
-
-    console.log(
-        xml.substring(
-            0,
-            1500
-        )
     );
 
 }

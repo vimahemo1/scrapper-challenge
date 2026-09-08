@@ -1,0 +1,162 @@
+"conteudo"><div id="j_id143" class="faixa-superior"></div>	
+		<div class="col-xs-12 col-sm-12 pb-80"> 
+       <script type="text/javascript">
+			(function(){
+				reducePolyfill();
+			})();
+    	</script>	
+		<script src="https://www.google.com/recaptcha/api.js" async="async" defer="defer"></script><form id="fPP" name="fPP" method="post" action="/pjeconsulta/ConsultaPublica/listView.seam;jsessionid=Amj7qzHei37tSfCGxQRnDBLwYHUX1clZIg-41tNf.tt-consulta-231-r67lb">
+		<div class="col-sm-3 consulta-filtro">
+	
+  <script type="text/javascript">
+		(function(window, $){ 
+			window.mascaraDocumento = function(id, tipo) {
+				var $input = $("input[id$='" + id + "']");
+				$input.unmask().val("");
+				
+	    		if (tipo === 'CPF') {
+	    			$input.mask('999.999.999-99');
+	    		} else if (tipo === 'CNPJ') {
+	    			$input.mask('99.999.999/9999-99');
+	    		} else if (tipo === 'NUN') {
+	    			$input.mask('9999999-99.9999.9.99.9999');
+		    	}
+	    		$input.focus();
+	    	}
+		})(window, jQuery_21);
+
+		function executarReCaptcha() {
+
+			if (false) {
+				grecaptcha.execute();
+				return false;
+			}
+			executarPesquisa();
+		}
+	
+		function onSubmit(token) {
+			showLoading();
+			executarPesquisa();
+		}
+    </script><div class="rich-panel rich-panel" id="fPP:consultaSearchFields"><div class="rich-panel-body " id="fPP:consultaSearchFields_body"><div id="fPP:CSF"><div id="fPP:consultaSearchForm" class="edit"><div id="fPP:j_id148" class="campoProcessoConsultaPublica">  
+
+	<script type="text/javascript" src="/pjeconsulta/js/jquery.mask.js"></script>
+
+    <div class="propertyView col-sm-12 "><div id="fPP:numProcesso-inputNumeroProcessoDecoration:fieldnumProcesso-inputNumeroProcessoDiv" class="name"><label for="fPP:numProcesso-inputNumeroProcessoDecoration:numProcesso-inputNumeroProcesso" class="">
+Processo</label></div>
+        <div class="value col-sm-12 "><input id="fPP:numProcesso-inputNumeroProcessoDecoration:numProcesso-inputNumeroProcesso" type="text" name="fPP:numProcesso-inputNumeroProcessoDecoration:numProcesso-inputNumeroProcesso" class="" alt="#(alt)" maxlength="255" onblur="" onchange="" onfocus="" onkeypress="" onkeyup="" size="0" tabindex="" />
+    </div>
+    </div>
+	
+	<script type="text/javascript">
+		jQuery(
+			function(){
+				var digitoTribunal = "05";
+				var strPlaceHolder = "_______-__.____." + "4" + "." + "05" + ".____";
+				
+				jQuery_21("input[id$='numProcesso-inputNumeroProcesso']").mask(
+					"9999999-99.A999.J.TR.9999", 
+					{
+						placeholder: strPlaceHolder,
+						placeholderOnFocus: true, 
+						selectonfocus: true, 
+						clearifnotmatch: false, 
+						translation: 
+						{
+							'A': {pattern: /[12]/},
+							'J': {pattern: /[4]/}, 
+							'T': {pattern: /[0]/},
+							'R': {pattern: /[5]/},
+						},
+						onComplete: function () {
+							var numProcessoInformado = jQuery("input[id$='numProcesso-inputNumeroProcesso']")[0].value;
+							var elemento = jQuery("input[id$='numProcesso-inputNumeroProcesso']").get(0);
+
+							if (!validaNumeroUnico(numProcessoInformado)){
+								jQuery_21(document).trigger('pesquisa:numeroProcesso:invalido', [ elemento, numProcessoInformado ]);
+								// o sistema validar� a numera��o de qualquer forma, mas s� vai lan�ar o alerta se tiver sido pedido
+								if( true ){
+									alert("N�mero de processo inv�lido.");
+								}
+							}else{
+								jQuery_21(document).trigger('pesquisa:numeroProcesso:valido', [ elemento, numProcessoInformado ]);
+							}
+						}
+					}
+				);
+				
+				jQuery_21("input[id$='numProcesso-inputNumeroProcesso']").blur( function (){
+					var numProcessoInformado = jQuery("input[id$='numProcesso-inputNumeroProcesso']")[0].value;
+					var elemento = jQuery("input[id$='numProcesso-inputNumeroProcesso']").get(0);
+
+					if(numProcessoInformado.length < 25){
+						if(numProcessoInformado.length == 0){
+							jQuery_21(document).trigger('pesquisa:numeroProcesso:vazio', [ elemento, numProcessoInformado ]);
+						}else{
+							jQuery_21(document).trigger('pesquisa:numeroProcesso:incompleto', [ elemento, numProcessoInformado ]);
+						}
+					}
+				});
+
+			}
+		);
+		
+		function validaNumeroUnico(numeroSujo){
+			var num = numeroSujo.replace(/[-\.]/g, '');
+			
+			var numeroSequencia = num.substr(0, 7);
+			var numeroDV = num.substr(7, 2);
+			var numeroAno = num.substr(9,4);
+			var numeroRamo = num.substr(13,1);
+			var numeroTribunal = num.substr(14,2);
+			var numeroOrigem = num.substr(16,4);
+					
+			var R1 = parseInt(numeroSequencia) % 97;
+			var R2 = parseInt(R1 + "" + numeroAno + "" + numeroRamo + "" + numeroTribunal ) % 97;
+			var R3 = parseInt(R2 + "" + numeroOrigem + "00" ) % 97
+			var digito = 98 - R3;
+									
+			return digito == numeroDV;
+		}
+	</script></div>
+	
+    <div class="propertyView ">
+        <div class="name"><label for="fPP:j_id162:processoReferenciaInput">
+
+						<p>Processo refer&ecirc;ncia</p>
+						Numera&ccedil;&atilde;o &uacute;nica <input type="radio" name="mascaraProcessoReferenciaRadio" checked="checked" onclick="mascaraDocumento('processoReferenciaInput', 'NUN')" /> 
+						Livre <input type="radio" name="mascaraProcessoReferenciaRadio" onclick="mascaraDocumento('processoReferenciaInput', 'LIV')" /></label>
+        </div>
+        
+        <div class="value col-sm-12 "><input id="fPP:j_id162:processoReferenciaInput" type="text" name="fPP:j_id162:processoReferenciaInput" />
+
+	<script type="text/javascript">
+	//<![CDATA[
+	(function($){
+		  $(document).ready(function() {
+			var selector = 'processoReferenciaInput';
+
+			//Seleciona elemento por id
+			var $input = $("input[id$='" + selector + "']");
+			
+			if($input.length < 1){
+				//Seleciona elemento por class
+				$input = $("input" + selector);
+			}
+			
+			if ('9999999-99.9999.9.99.9999' == '') {
+				$input.unmask();
+			} else {
+				$input.mask('9999999-99.9999.9.99.9999');
+			}
+		 });
+	})(jQuery_21);
+	//]]>
+	</script>
+        </div>
+    </div>
+	
+    <div class="propertyView ">
+        <div class="name"><label for="fPP:dnp:nomeParte">
+Nome da Parte</label>
+     
