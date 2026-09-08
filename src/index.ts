@@ -2,6 +2,7 @@ import axios from "axios";
 import fs from "fs";
 import * as cheerio from "cheerio";
 
+
 const url =
     "https://pjett.trf5.jus.br/pjeconsulta/ConsultaPublica/listView.seam";
 
@@ -15,16 +16,17 @@ async function main() {
     // 1. PETICIÓN GET INICIAL
     // =========================================================
 
-    const response = await axios.get<string>(url, {
+    const response = await axios.get<string>(
+        url,
+        {
+            timeout: 30000,
 
-        timeout: 30000,
-
-        headers: {
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            headers: {
+                "User-Agent":
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            }
         }
-
-    });
+    );
 
 
     console.log(
@@ -218,7 +220,7 @@ async function main() {
 
             campos.push({
 
-                name: name,
+                name,
 
                 type:
                     input.attr("type")
@@ -226,7 +228,7 @@ async function main() {
 
                 value:
                     input.attr("value")
-                    ?? "",
+                    ?? ""
 
             });
 
@@ -273,19 +275,17 @@ async function main() {
             ).toLowerCase();
 
 
-            // Los botones se agregan después
+            // Los botones se agregan manualmente después
             if (
                 type === "button"
                 || type === "submit"
             ) {
-
                 return;
-
             }
 
 
-            // Radios y checkbox:
-            // solo se envían si están seleccionados
+            // Radio y checkbox solo se envían
+            // cuando están seleccionados
             if (
                 type === "radio"
                 || type === "checkbox"
@@ -339,7 +339,9 @@ async function main() {
 
             const value =
                 selectedOption.length > 0
+
                     ? selectedOption.attr("value") ?? ""
+
                     : select
                         .find("option")
                         .first()
@@ -462,7 +464,7 @@ async function main() {
 
 
     // =========================================================
-    // 15. REALIZAR POST
+    // 15. REALIZAR POST DE BÚSQUEDA
     // =========================================================
 
     const searchResponse =
@@ -475,7 +477,6 @@ async function main() {
             {
 
                 timeout: 30000,
-
 
                 headers: {
 
@@ -492,14 +493,14 @@ async function main() {
                         url,
 
                     "X-Requested-With":
-                        "XMLHttpRequest",
+                        "XMLHttpRequest"
 
                 },
 
 
-                // Nos permite revisar respuestas como 403, 429, etc.
-                // sin que Axios lance inmediatamente una excepción.
-                validateStatus: () => true,
+                // Permite inspeccionar respuestas HTTP
+                // sin lanzar automáticamente una excepción
+                validateStatus: () => true
 
             }
 
@@ -529,7 +530,7 @@ async function main() {
 
 
     // =========================================================
-    // 17. GUARDAR RESPUESTA DEL POST
+    // 17. GUARDAR RESPUESTA
     // =========================================================
 
     fs.writeFileSync(
@@ -542,88 +543,79 @@ async function main() {
     console.log(
         "Respuesta guardada en search-response.xml"
     );
-    // Analizar rápidamente la respuesta
-    const xml = searchResponse.data;
+
+
+    // =========================================================
+    // 18. ANALIZAR RÁPIDAMENTE LA RESPUESTA
+    // =========================================================
+
+    const xml =
+        searchResponse.data;
+
 
     console.log(
         "¿Contiene ViewState?:",
-        xml.includes("javax.faces.ViewState")
+        xml.includes(
+            "javax.faces.ViewState"
+        )
     );
+
 
     console.log(
         "¿Contiene referencia a procesos?:",
-        xml.toLowerCase().includes("processo")
+        xml
+            .toLowerCase()
+            .includes("processo")
     );
+
 
     console.log(
         "¿Contiene CAPTCHA?:",
-        xml.toLowerCase().includes("captcha")
+        xml
+            .toLowerCase()
+            .includes("captcha")
     );
+
 
     console.log(
         "¿Contiene error?:",
-        xml.toLowerCase().includes("erro")
+        xml
+            .toLowerCase()
+            .includes("erro")
     );
 
-    console.log("\nInicio de la respuesta XML:\n");
 
     console.log(
-        xml.substring(0, 1500)
+        "\nInicio de la respuesta XML:\n"
     );
 
+
+    console.log(
+        xml.substring(
+            0,
+            1500
+        )
+    );
 
 }
 
-fs.writeFileSync(
-    "search-response.xml",
-    searchResponse.data,
-    "utf-8"
-);
 
-console.log(
-    "Respuesta guardada en search-response.xml"
-);
-
-
-// Analizar rápidamente la respuesta
-const xml = searchResponse.data;
-
-console.log(
-    "¿Contiene ViewState?:",
-    xml.includes("javax.faces.ViewState")
-);
-
-console.log(
-    "¿Contiene referencia a procesos?:",
-    xml.toLowerCase().includes("processo")
-);
-
-console.log(
-    "¿Contiene CAPTCHA?:",
-    xml.toLowerCase().includes("captcha")
-);
-
-console.log(
-    "¿Contiene error?:",
-    xml.toLowerCase().includes("erro")
-);
-
-console.log("\nInicio de la respuesta XML:\n");
-
-console.log(
-    xml.substring(0, 1500)
-);
 // =============================================================
-// EJECUTAR
+// EJECUTAR PROGRAMA
 // =============================================================
 
-main().catch((error) => {
+main().catch(
+    (error) => {
 
-    console.error(
-        "Error:",
-        error instanceof Error
-            ? error.message
-            : error
-    );
+        console.error(
 
-});
+            "Error:",
+
+            error instanceof Error
+                ? error.message
+                : error
+
+        );
+
+    }
+);
